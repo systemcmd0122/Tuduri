@@ -197,14 +197,22 @@
     border: none !important;
     box-shadow: none !important;
     margin: 0 !important;
-    padding: 0;
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
+    padding: 0 !important;
+    position: relative !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+
+  /* Force page breaks for multiple pages */
+  .page-break {
+    page-break-after: always;
+    break-after: page;
   }
 
   /* Hide headers, footers, and other UI elements */
-  header, aside, .ruler, [role="tooltip"] {
+  header, aside, .ruler, [role="tooltip"], nav, footer {
     display: none !important;
   }
 
@@ -212,6 +220,12 @@
     overflow: visible !important;
     background: white !important;
     padding: 0 !important;
+    height: auto !important;
+    display: block !important;
+  }
+
+  body {
+    overflow: visible !important;
   }
 }
 
