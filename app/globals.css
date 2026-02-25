@@ -180,12 +180,32 @@
     display: block !important;
   }
 
-  body {
+  html, body {
     background: white !important;
     margin: 0 !important;
     padding: 0 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  /* Reset all layout containers to block and ensure they don't clip content */
+  #editor-scroll-area,
+  #editor-scroll-area div,
+  body > div,
+  body > div > div {
+    display: block !important;
+    overflow: visible !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: auto !important;
+    height: auto !important;
+    position: static !important;
+    box-shadow: none !important;
+    border: none !important;
+    flex: none !important;
   }
 
   @page {
@@ -205,27 +225,41 @@
     display: block !important;
   }
 
-  /* Force page breaks for multiple pages */
-  .page-break {
-    page-break-after: always;
-    break-after: page;
+  .page-container {
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    position: relative !important;
+    display: block !important;
+    background: white !important;
+    color: black !important;
   }
 
-  /* Hide headers, footers, and other UI elements */
-  header, aside, .ruler, [role="tooltip"], nav, footer {
+  /* Force text to be black and fonts to load */
+  .page-container * {
+    color: black !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide rulers, safe areas, and guides in print unless explicitly desired */
+  .ruler, .safe-area, .guide-line {
     display: none !important;
   }
 
-  #editor-scroll-area {
-    overflow: visible !important;
-    background: white !important;
-    padding: 0 !important;
-    height: auto !important;
+  /* Force page breaks for multiple pages */
+  .page-break {
     display: block !important;
+    height: 0 !important;
+    page-break-after: always !important;
+    break-after: page !important;
   }
 
-  body {
-    overflow: visible !important;
+  /* Hide headers, footers, and other UI elements */
+  header, aside, [role="tooltip"], nav, footer {
+    display: none !important;
   }
 }
 

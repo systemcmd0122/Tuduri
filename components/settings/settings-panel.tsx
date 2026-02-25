@@ -93,7 +93,7 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
   if (!open) return null
 
   return (
-    <aside className="no-print w-72 border-l border-border bg-card flex flex-col shrink-0 overflow-hidden">
+    <aside className="no-print h-full w-72 border-l border-border bg-card flex flex-col shrink-0 overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border">
         <h2 className="text-sm font-medium text-card-foreground">設定</h2>
@@ -106,7 +106,7 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
         </button>
       </div>
 
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 min-h-0">
         <div className="p-4 space-y-6">
           {/* Font Settings */}
           <SettingSection title="文字設定" icon={<Type className="size-3.5" />}>
