@@ -10,12 +10,12 @@ export async function exportToPNG(
   const { default: html2canvas } = await import('html2canvas')
   
   const canvas = await html2canvas(canvasElement, {
-    scale: 3,
+    scale: 2,
     useCORS: true,
     backgroundColor: '#ffffff',
     logging: false,
-    width: settings.paperWidth * MM_TO_PX,
-    height: canvasElement.offsetHeight, // Use actual height for PNG
+    width: canvasElement.scrollWidth,
+    height: canvasElement.scrollHeight,
   })
   
   const link = document.createElement('a')
@@ -32,25 +32,46 @@ export async function exportToPDF(
   const { jsPDF } = await import('jspdf')
 
   const paperWidthMM = settings.paperWidth
-  const paperHeightMM = settings.paperHeight || 297
-
-  const canvas = await html2canvas(canvasElement, {
-    scale: 3,
-    useCORS: true,
-    backgroundColor: '#ffffff',
-    logging: false,
-    width: paperWidthMM * MM_TO_PX,
-    height: paperHeightMM * MM_TO_PX,
-  })
+  const paperHeightMM = settings.paperHeight
 
   const pdf = new jsPDF({
-    orientation: paperHeightMM > paperWidthMM ? 'portrait' : 'landscape',
+    orientation: paperHeightMM >= paperWidthMM ? 'portrait' : 'landscape',
     unit: 'mm',
     format: [paperWidthMM, paperHeightMM],
   })
 
-  const imgData = canvas.toDataURL('image/png')
-  pdf.addImage(imgData, 'PNG', 0, 0, paperWidthMM, paperHeightMM)
+  // Find all page containers
+  const pageElements = canvasElement.querySelectorAll('.page-container')
+
+  if (pageElements.length === 0) {
+    // Fallback to capturing the whole canvas as one page if no .page-container found
+    const canvas = await html2canvas(canvasElement, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      logging: false,
+    })
+    const imgData = canvas.toDataURL('image/png')
+    pdf.addImage(imgData, 'PNG', 0, 0, paperWidthMM, paperHeightMM)
+  } else {
+    for (let i = 0; i < pageElements.length; i++) {
+      if (i > 0) pdf.addPage([paperWidthMM, paperHeightMM])
+
+      const pageEl = pageElements[i] as HTMLElement
+      const canvas = await html2canvas(pageEl, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        width: paperWidthMM * MM_TO_PX,
+        height: paperHeightMM * MM_TO_PX,
+      })
+
+      const imgData = canvas.toDataURL('image/png')
+      pdf.addImage(imgData, 'PNG', 0, 0, paperWidthMM, paperHeightMM)
+    }
+  }
+
   pdf.save(`shikiji-${Date.now()}.pdf`)
 }
 
