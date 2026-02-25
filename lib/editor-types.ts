@@ -1,9 +1,15 @@
+export type PaperType = 'A4' | 'A3' | 'B4' | 'B5' | 'custom'
+export type PaperOrientation = 'portrait' | 'landscape'
+
 export interface EditorSettings {
   // Writing mode
   writingMode: 'vertical' | 'horizontal'
 
   // Paper settings (mm)
+  paperType: PaperType
+  paperOrientation: PaperOrientation
   paperWidth: number
+  paperHeight: number
   marginTop: number
   marginBottom: number
   marginRight: number
@@ -62,7 +68,10 @@ export interface Template {
 
 export const DEFAULT_SETTINGS: EditorSettings = {
   writingMode: 'vertical',
-  paperWidth: 260,
+  paperType: 'A4',
+  paperOrientation: 'portrait',
+  paperWidth: 210,
+  paperHeight: 297,
   marginTop: 30,
   marginBottom: 30,
   marginRight: 30,
@@ -99,3 +108,10 @@ export const FONT_WEIGHT_OPTIONS = [
 ] as const
 
 export const MM_TO_PX = 3.7795275591
+
+export const PAPER_PRESETS: Record<Exclude<PaperType, 'custom'>, { portrait: [number, number]; landscape: [number, number] }> = {
+  A4: { portrait: [210, 297], landscape: [297, 210] },
+  A3: { portrait: [297, 420], landscape: [420, 297] },
+  B4: { portrait: [257, 364], landscape: [364, 257] },
+  B5: { portrait: [182, 257], landscape: [257, 182] },
+}

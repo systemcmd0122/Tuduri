@@ -14,6 +14,8 @@ export async function exportToPNG(
     useCORS: true,
     backgroundColor: '#ffffff',
     logging: false,
+    width: settings.paperWidth * MM_TO_PX,
+    height: canvasElement.offsetHeight, // Use actual height for PNG
   })
   
   const link = document.createElement('a')
@@ -30,16 +32,15 @@ export async function exportToPDF(
   const { jsPDF } = await import('jspdf')
 
   const paperWidthMM = settings.paperWidth
-  // For the scroll paper, height is determined by content
-  const canvasRect = canvasElement.getBoundingClientRect()
-  const aspectRatio = canvasRect.height / canvasRect.width
-  const paperHeightMM = paperWidthMM * aspectRatio
+  const paperHeightMM = settings.paperHeight || 297
 
   const canvas = await html2canvas(canvasElement, {
     scale: 3,
     useCORS: true,
     backgroundColor: '#ffffff',
     logging: false,
+    width: paperWidthMM * MM_TO_PX,
+    height: paperHeightMM * MM_TO_PX,
   })
 
   const pdf = new jsPDF({
@@ -53,46 +54,6 @@ export async function exportToPDF(
   pdf.save(`shikiji-${Date.now()}.pdf`)
 }
 
-export function printDocument(canvasElement: HTMLElement): void {
-  const printWindow = window.open('', '_blank')
-  if (!printWindow) return
-
-  const styles = Array.from(document.styleSheets)
-    .map((sheet) => {
-      try {
-        return Array.from(sheet.cssRules)
-          .map((rule) => rule.cssText)
-          .join('\n')
-      } catch {
-        return ''
-      }
-    })
-    .join('\n')
-
-  printWindow.document.write(`
-    <!DOCTYPE html>
-    <html lang="ja">
-    <head>
-      <meta charset="UTF-8">
-      <title>式辞 - 印刷</title>
-      <style>
-        ${styles}
-        @page { margin: 0; }
-        body { margin: 0; padding: 0; background: white; }
-        .no-print { display: none !important; }
-      </style>
-      <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;700&display=swap" rel="stylesheet">
-    </head>
-    <body>
-      ${canvasElement.outerHTML}
-    </body>
-    </html>
-  `)
-  printWindow.document.close()
-  
-  // Wait for fonts to load
-  setTimeout(() => {
-    printWindow.print()
-    printWindow.close()
-  }, 1000)
+export function printDocument(): void {
+  window.print()
 }

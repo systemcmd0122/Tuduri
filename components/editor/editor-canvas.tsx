@@ -14,6 +14,7 @@ export default function EditorCanvas() {
   const isVertical = settings.writingMode === 'vertical'
 
   const paperWidthPx = settings.paperWidth * MM_TO_PX
+  const paperHeightPx = settings.paperHeight * MM_TO_PX
   const marginTopPx = settings.marginTop * MM_TO_PX
   const marginBottomPx = settings.marginBottom * MM_TO_PX
   const marginRightPx = settings.marginRight * MM_TO_PX
@@ -46,14 +47,14 @@ export default function EditorCanvas() {
   // Ruler marks
   const rulerMarks = useMemo(() => {
     const marks: { pos: number; label: string; isMajor: boolean }[] = []
-    const rulerLength = isVertical ? 2000 : paperWidthPx
+    const rulerLength = Math.max(paperWidthPx, paperHeightPx, 2000)
     for (let i = 0; i <= rulerLength; i += 10 * MM_TO_PX) {
       const mm = Math.round(i / MM_TO_PX)
       const isMajor = mm % 50 === 0
       marks.push({ pos: i, label: isMajor ? `${mm}` : '', isMajor })
     }
     return marks
-  }, [isVertical, paperWidthPx])
+  }, [paperWidthPx, paperHeightPx])
 
   // Row lines calculation for vertical writing
   // In vertical writing, "rows" are vertical columns going right-to-left
@@ -65,6 +66,16 @@ export default function EditorCanvas() {
 
   return (
     <div className="flex-1 flex relative overflow-hidden bg-muted/30" id="editor-scroll-area">
+      {/* Dynamic Print Styles */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @media print {
+          @page {
+            size: ${settings.paperWidth}mm ${settings.paperHeight}mm;
+            margin: 0;
+          }
+        }
+      ` }} />
+
       {/* Scrollable canvas area */}
       <div className="flex-1 flex items-start justify-center overflow-auto p-6">
         <div className="relative flex flex-col items-center">
@@ -106,7 +117,8 @@ export default function EditorCanvas() {
             className="relative bg-card shadow-sm transition-all duration-200"
             style={{
               width: `${paperWidthPx}px`,
-              minHeight: isVertical ? '800px' : '600px',
+              height: isVertical ? `${paperHeightPx}px` : 'auto',
+              minHeight: `${paperHeightPx}px`,
               border: '1px solid var(--border)',
             }}
           >
@@ -141,7 +153,10 @@ export default function EditorCanvas() {
                     preserveAspectRatio="none"
                   >
                     {Array.from({ length: Math.ceil((paperWidthPx - marginLeftPx - marginRightPx) / rowLineSpacing) + 1 }).map((_, i) => {
-                      const x = i * rowLineSpacing
+                      // In vertical-rl, lines are spaced from the right
+                      const contentWidth = paperWidthPx - marginLeftPx - marginRightPx
+                      const x = contentWidth - (i * rowLineSpacing)
+                      if (x < -1) return null // Allow small overflow for the last line
                       return (
                         <line
                           key={i}
@@ -162,7 +177,7 @@ export default function EditorCanvas() {
                     className="absolute inset-0 w-full h-full"
                     preserveAspectRatio="none"
                   >
-                    {Array.from({ length: Math.ceil(800 / rowLineSpacing) + 1 }).map((_, i) => {
+                    {Array.from({ length: Math.ceil((paperHeightPx - marginTopPx - marginBottomPx) / rowLineSpacing) + 1 }).map((_, i) => {
                       const y = i * rowLineSpacing
                       return (
                         <line
@@ -228,8 +243,8 @@ export default function EditorCanvas() {
                 paddingBottom: `${marginBottomPx}px`,
                 paddingRight: `${marginRightPx}px`,
                 paddingLeft: `${marginLeftPx}px`,
-                minHeight: isVertical ? '800px' : '600px',
-                height: isVertical ? '800px' : 'auto',
+                minHeight: `${paperHeightPx}px`,
+                height: isVertical ? `${paperHeightPx}px` : 'auto',
                 width: '100%',
                 overflowX: isVertical ? 'auto' : 'hidden',
                 overflowY: isVertical ? 'hidden' : 'auto',
@@ -252,33 +267,36 @@ export default function EditorCanvas() {
       {/* Fixed Vertical Ruler (pinned to the right edge, always visible) */}
       {settings.showRuler && isVertical && (
         <div
-          className="absolute top-0 right-0 h-full select-none z-20 pointer-events-none bg-muted/60 backdrop-blur-sm"
+          className="no-print absolute top-0 right-0 h-full select-none z-20 pointer-events-none bg-muted/60 backdrop-blur-sm"
           style={{ width: '28px', borderLeft: '1px solid var(--border)' }}
         >
           <div className="relative h-full" style={{ paddingTop: '24px' }}>
-            {rulerMarks.map((mark, i) => (
-              <div
-                key={i}
-                className="absolute flex items-center"
-                style={{ top: `${mark.pos + 24}px`, right: '2px' }}
-              >
+            {rulerMarks.map((mark, i) => {
+              if (mark.pos > 2000) return null
+              return (
                 <div
-                  className="bg-muted-foreground/50"
-                  style={{
-                    height: '1px',
-                    width: mark.isMajor ? '10px' : '5px',
-                  }}
-                />
-                {mark.label && (
-                  <span
-                    className="text-muted-foreground leading-none absolute"
-                    style={{ fontSize: '7px', right: '14px', transform: 'translateX(-50%)' }}
-                  >
-                    {mark.label}
-                  </span>
-                )}
-              </div>
-            ))}
+                  key={i}
+                  className="absolute flex items-center"
+                  style={{ top: `${mark.pos + 24}px`, right: '2px' }}
+                >
+                  <div
+                    className="bg-muted-foreground/50"
+                    style={{
+                      height: '1px',
+                      width: mark.isMajor ? '10px' : '5px',
+                    }}
+                  />
+                  {mark.label && (
+                    <span
+                      className="text-muted-foreground leading-none absolute"
+                      style={{ fontSize: '7px', right: '14px', transform: 'translateX(-50%)' }}
+                    >
+                      {mark.label}
+                    </span>
+                  )}
+                </div>
+              )
+            })}
           </div>
         </div>
       )}
