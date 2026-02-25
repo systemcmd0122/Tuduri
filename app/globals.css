@@ -205,10 +205,18 @@
     display: block !important;
   }
 
-  /* Force page breaks for multiple pages */
-  .page-break {
+  .page-container {
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: white !important;
     page-break-after: always;
     break-after: page;
+  }
+
+  /* Force page breaks for multiple pages */
+  .page-break {
+    display: none !important;
   }
 
   /* Hide headers, footers, and other UI elements */

@@ -71,14 +71,14 @@ const Page = React.memo(({ content, index, isVertical, settings, onInput, onFocu
       }}
     >
       {/* Page number indicator */}
-      <div className="absolute -left-10 top-0 text-muted-foreground/40 text-xs font-mono select-none group-hover:text-muted-foreground transition-colors">
+      <div className="no-print absolute -left-10 top-0 text-muted-foreground/40 text-xs font-mono select-none group-hover:text-muted-foreground transition-colors">
         P.{index + 1}
       </div>
 
       {/* Safe area indicator */}
       {settings.showSafeArea && (
         <div
-          className="absolute pointer-events-none safe-area z-10"
+          className="no-print absolute pointer-events-none safe-area z-10"
           style={{
             top: `${marginTopPx}px`,
             right: `${marginRightPx}px`,
@@ -126,7 +126,7 @@ const Page = React.memo(({ content, index, isVertical, settings, onInput, onFocu
       {/* Guidelines */}
       {settings.showGuidelines && settings.columns > 1 && (
         <div
-          className="absolute inset-0 pointer-events-none z-10 flex"
+          className="no-print absolute inset-0 pointer-events-none z-10 flex"
           style={{
             flexDirection: isVertical ? 'row' : 'column',
             padding: `${marginTopPx}px ${marginRightPx}px ${marginBottomPx}px ${marginLeftPx}px`,

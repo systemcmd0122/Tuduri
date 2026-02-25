@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
+import { MM_TO_PX } from './editor-types'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -31,7 +32,6 @@ export function paginateContent(
     lineHeight,
   } = settings
 
-  const MM_TO_PX = 3.7795275591
   const fontSizeMM = fontSize / MM_TO_PX
 
   const availWidthMM = paperWidth - marginLeft - marginRight
