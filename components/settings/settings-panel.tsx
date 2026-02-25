@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { useEditor } from '@/lib/editor-store'
-import { FONT_OPTIONS, FONT_WEIGHT_OPTIONS } from '@/lib/editor-types'
+import { FONT_OPTIONS, FONT_WEIGHT_OPTIONS, PAPER_PRESETS, type PaperType, type PaperOrientation } from '@/lib/editor-types'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
@@ -61,6 +61,34 @@ function SettingRow({ label, children }: { label: string; children: React.ReactN
 export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
   const { state, setSettings } = useEditor()
   const { settings } = state
+
+  const handlePaperTypeChange = (type: PaperType) => {
+    if (type === 'custom') {
+      setSettings({ paperType: type })
+      return
+    }
+
+    const [width, height] = PAPER_PRESETS[type][settings.paperOrientation]
+    setSettings({
+      paperType: type,
+      paperWidth: width,
+      paperHeight: height,
+    })
+  }
+
+  const handleOrientationChange = (orientation: PaperOrientation) => {
+    if (settings.paperType === 'custom') {
+      setSettings({ paperOrientation: orientation })
+      return
+    }
+
+    const [width, height] = PAPER_PRESETS[settings.paperType as Exclude<PaperType, 'custom'>][orientation]
+    setSettings({
+      paperOrientation: orientation,
+      paperWidth: width,
+      paperHeight: height,
+    })
+  }
 
   if (!open) return null
 
@@ -155,14 +183,61 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
 
           {/* Paper Settings */}
           <SettingSection title="用紙設定" icon={<FileText className="size-3.5" />}>
+            <SettingRow label="用紙サイズ">
+              <Select
+                value={settings.paperType}
+                onValueChange={(v) => handlePaperTypeChange(v as PaperType)}
+              >
+                <SelectTrigger size="sm" className="h-7 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="A4"><span className="text-xs">A4 (210x297)</span></SelectItem>
+                  <SelectItem value="A3"><span className="text-xs">A3 (297x420)</span></SelectItem>
+                  <SelectItem value="B4"><span className="text-xs">B4 (257x364)</span></SelectItem>
+                  <SelectItem value="B5"><span className="text-xs">B5 (182x257)</span></SelectItem>
+                  <SelectItem value="custom"><span className="text-xs">カスタム</span></SelectItem>
+                </SelectContent>
+              </Select>
+            </SettingRow>
+
+            {settings.paperType !== 'custom' && (
+              <SettingRow label="向き">
+                <div className="flex bg-muted rounded-md p-0.5">
+                  <button
+                    onClick={() => handleOrientationChange('portrait')}
+                    className={`flex-1 text-[10px] py-1 px-2 rounded-sm transition-colors ${settings.paperOrientation === 'portrait' ? 'bg-card shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                  >
+                    縦
+                  </button>
+                  <button
+                    onClick={() => handleOrientationChange('landscape')}
+                    className={`flex-1 text-[10px] py-1 px-2 rounded-sm transition-colors ${settings.paperOrientation === 'landscape' ? 'bg-card shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                  >
+                    横
+                  </button>
+                </div>
+              </SettingRow>
+            )}
+
             <SettingRow label="用紙幅 (mm)">
               <Input
                 type="number"
                 value={settings.paperWidth}
-                onChange={(e) => setSettings({ paperWidth: Number(e.target.value) || 260 })}
+                onChange={(e) => setSettings({ paperWidth: Number(e.target.value) || 210, paperType: 'custom' })}
                 className="h-7 text-xs"
-                min={100}
-                max={500}
+                min={50}
+                max={2000}
+              />
+            </SettingRow>
+            <SettingRow label="用紙高 (mm)">
+              <Input
+                type="number"
+                value={settings.paperHeight}
+                onChange={(e) => setSettings({ paperHeight: Number(e.target.value) || 297, paperType: 'custom' })}
+                className="h-7 text-xs"
+                min={50}
+                max={5000}
               />
             </SettingRow>
           </SettingSection>

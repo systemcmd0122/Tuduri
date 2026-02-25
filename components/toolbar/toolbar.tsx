@@ -101,8 +101,7 @@ export default function Toolbar({ onToggleSettings, settingsOpen }: ToolbarProps
   }
 
   const handlePrint = () => {
-    const el = document.getElementById('print-canvas')
-    if (el) printDocument(el)
+    printDocument()
   }
 
   const toggleWritingMode = () => {
